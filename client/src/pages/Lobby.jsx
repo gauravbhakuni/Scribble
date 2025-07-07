@@ -1,47 +1,35 @@
-import React, { useState } from 'react';
+// pages/Lobby.jsx
+import React from "react";
 
-const Lobby = ({ onJoin }) => {
-  const [username, setUsername] = useState('');
-  const [roomId, setRoomId] = useState('');
-
-  const handleJoin = () => {
-    if (!username) return alert("Enter username");
-    if (!roomId) return alert("Enter room ID to join");
-    onJoin(username, roomId);
-  };
-
-  const handleCreateRoom = () => {
-    if (!username) return alert("Enter username");
-    const newRoomId = Math.random().toString(36).substring(2, 8);
-    onJoin(username, newRoomId);
-  };
-
+const Lobby = ({ roomId, username, players, isCreator, onStartGame }) => {
   return (
-    <div className="flex flex-col items-center mt-20 space-y-4">
-      <h2 className="text-3xl font-bold">🎨 Scribble.io Lobby</h2>
+    <div className="flex flex-col items-center mt-10 space-y-4">
+      <h1 className="text-2xl font-bold">Room ID: {roomId}</h1>
+      <p className="text-md">Welcome, {username}</p>
 
-      <input
-        placeholder="Enter your name"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        className="border p-2 rounded"
-      />
-
-      <input
-        placeholder="Room ID (to join)"
-        value={roomId}
-        onChange={(e) => setRoomId(e.target.value)}
-        className="border p-2 rounded"
-      />
-
-      <div className="flex space-x-4">
-        <button onClick={handleJoin} className="bg-blue-500 text-white px-4 py-2 rounded">
-          Join Room
-        </button>
-        <button onClick={handleCreateRoom} className="bg-green-500 text-white px-4 py-2 rounded">
-          Create Room
-        </button>
+      <div className="border p-4 rounded w-full max-w-sm bg-white">
+        <h2 className="font-semibold text-lg mb-2">Players:</h2>
+        <ul className="space-y-1">
+          {players.map((p) => (
+            <li
+              key={p.id}
+              className="flex justify-between items-center bg-gray-100 px-3 py-1 rounded"
+            >
+              <span>{p.username}</span>
+            </li>
+          ))}
+        </ul>
       </div>
+
+      {isCreator && (
+        <button
+          onClick={onStartGame}
+          disabled={players.length < 2}
+          className="mt-4 px-6 py-2 bg-green-600 text-white rounded disabled:opacity-50"
+        >
+          Start Game
+        </button>
+      )}
     </div>
   );
 };

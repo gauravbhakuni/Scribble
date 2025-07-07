@@ -3,7 +3,7 @@ import socket from "../socket";
 
 const COLORS = ["black", "red", "green", "blue", "purple", "orange"];
 
-const DrawingCanvas = ({ roomId }) => {
+const DrawingCanvas = ({ roomId, canDraw }) => {
   const canvasRef = useRef(null);
   const isDrawing = useRef(false);
   const prev = useRef({ x: 0, y: 0 });
@@ -69,10 +69,12 @@ const DrawingCanvas = ({ roomId }) => {
     };
 
     // Event listeners
-    canvas.addEventListener("mousedown", handleMouseDown);
-    canvas.addEventListener("mousemove", handleMouseMove);
-    canvas.addEventListener("mouseup", handleMouseUp);
-    canvas.addEventListener("mouseleave", handleMouseUp);
+    if (canDraw) {
+      canvas.addEventListener("mousedown", handleMouseDown);
+      canvas.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      canvas.addEventListener("mouseleave", handleMouseUp);
+    }
 
     // Socket receive
     socket.on("drawing", ({ x0, y0, x1, y1, color }) => {
@@ -80,13 +82,15 @@ const DrawingCanvas = ({ roomId }) => {
     });
 
     return () => {
-      canvas.removeEventListener("mousedown", handleMouseDown);
-      canvas.removeEventListener("mousemove", handleMouseMove);
-      canvas.removeEventListener("mouseup", handleMouseUp);
-      canvas.removeEventListener("mouseleave", handleMouseUp);
+      if (canDraw) {
+        canvas.removeEventListener("mousedown", handleMouseDown);
+        canvas.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+        canvas.removeEventListener("mouseleave", handleMouseUp);
+      }
       socket.off("drawing");
     };
-  }, [roomId]);
+  }, [roomId, canDraw]);
 
   // Color select handler
   const handleColorSelect = (color) => {
@@ -104,30 +108,42 @@ const DrawingCanvas = ({ roomId }) => {
   return (
     <div className="flex flex-col items-center mt-6">
       {/* Toolbar */}
-      <div className="flex gap-2 mb-2">
-        {COLORS.map((color) => (
+      {canDraw && (
+        <div className="flex gap-2 mb-2">
+          {COLORS.map((color) => (
+            <button
+              key={color}
+              onClick={() => handleColorSelect(color)}
+              className={`w-8 h-8 rounded-full border-2 ${
+                activeColor === color && !eraserActive
+                  ? "border-black"
+                  : "border-transparent"
+              }`}
+              style={{ backgroundColor: color }}
+            />
+          ))}
           <button
-            key={color}
-            onClick={() => handleColorSelect(color)}
-            className={`w-8 h-8 rounded-full border-2 ${
-              activeColor === color && !eraserActive ? "border-black" : "border-transparent"
+            onClick={handleEraser}
+            className={`px-3 py-1 text-sm border rounded ${
+              eraserActive ? "bg-gray-300" : "bg-white"
             }`}
-            style={{ backgroundColor: color }}
-          />
-        ))}
-        <button
-          onClick={handleEraser}
-          className={`px-3 py-1 text-sm border rounded ${
-            eraserActive ? "bg-gray-300" : "bg-white"
-          }`}
-        >
-          Eraser
-        </button>
-      </div>
+          >
+            Eraser
+          </button>
+        </div>
+      )}
 
       {/* Canvas */}
       <div className="border-2 border-black">
-        <canvas ref={canvasRef} className="bg-white cursor-crosshair" />
+        <canvas
+          ref={canvasRef}
+          className="bg-white"
+          style={{
+            cursor: eraserActive
+              ? "url('/eraser-cursor.png'), auto"
+              : `url('data:image/svg+xml;utf8,<svg height="24" width="24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="6" fill='${activeColor}' /></svg>'), auto`,
+          }}
+        />
       </div>
     </div>
   );
