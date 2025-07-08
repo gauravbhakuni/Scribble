@@ -70,12 +70,12 @@ io.on("connection", (socket) => {
     // Always emit players-update from authoritative game state
     io.to(roomId).emit("players-update", roomState[roomId].players);
 
-    // Start game when 2-4 players
-    const players = roomState[roomId].players;
-    if (players.length >= 2 && players.length <= 4) {
-      // Start the first turn immediately and only emit players-update after start-turn
-      startGame(io, roomId);
-    }
+    // REMOVE: Start game when 2-4 players
+    // const players = roomState[roomId].players;
+    // if (players.length >= 2 && players.length <= 4) {
+    //   // Start the first turn immediately and only emit players-update after start-turn
+    //   startGame(io, roomId);
+    // }
   });
 
   socket.on("chat", ({ roomId, username, text }) => {

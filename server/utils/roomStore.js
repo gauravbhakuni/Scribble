@@ -8,12 +8,14 @@ function addPlayer({ socketId, username, roomId }) {
   const existing = rooms[roomId].find((p) => p.username === username);
   if (existing) {
     existing.id = socketId;
+    console.log(`[roomStore] Updated player socketId for ${username} in room ${roomId}:`, socketId);
     return;
   }
 
   // Avoid duplicates by socketId
   if (!rooms[roomId].some((p) => p.id === socketId)) {
     rooms[roomId].push({ id: socketId, username, points: 0, guessedCorrectly: false });
+    console.log(`[roomStore] Added player ${username} to room ${roomId}:`, socketId);
   }
 }
 
